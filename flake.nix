@@ -1,30 +1,14 @@
 {
   description = "";
-  outputs =
-    inputs:
-    inputs.nix-genesis.mkFlake { inherit inputs; } (
-      { lib, config, ... }:
-      {
-        systems = [
-          "x86_64-linux"
-          "aarch64-linux"
-        ];
-        perSystem.treefmt = {
-          projectRootFile = "flake.nix";
-          programs = {
-            nixfmt.enable = true;
-            deadnix.enable = true;
-            statix.enable = true;
-            dos2unix.enable = true;
-          };
-        };
-        imports = [
-          inputs.nix-genesis.fmt
-          "${inputs.nix-genesis.outPath}/lib.nix"
-        ];
-        flake.nixosModules = config.flake.lib.dirToAttrs ./nixosModules;
-      }
-    );
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+    flake.nixosModules = {
+      zfsos = inputs.nix-genesis.lib.dirToAttrs ./nixosModules/zfsos;
+    };
+  };
   inputs = {
     nixpkgs = {
       type = "github";
@@ -37,5 +21,12 @@
       repo = "nix-genesis";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    flake-parts = {
+      type = "github";
+      owner = "hercules-ci";
+      repo = "flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
   };
 }
+
