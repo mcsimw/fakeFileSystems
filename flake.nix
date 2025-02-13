@@ -1,14 +1,6 @@
 {
-  description = "";
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
-    flake.nixosModules = {
-      zfsos = inputs.nix-genesis.lib.dirToAttrs ./nixosModules/zfsos;
-    };
-  };
+  description = "My new flake with merged nixosModules";
+
   inputs = {
     nixpkgs = {
       type = "github";
@@ -28,5 +20,21 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
   };
+
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+    { lib, self, ... }:
+    {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      flake.nixosModules = lib.mkMerge [
+        (inputs.nix-genesis.lib.dirToAttrs ./nixosModules)
+        {
+          zfsos = lib.modules.importApply ./nixosModules/zfsos { localFlake = self; };
+        }
+      ];
+    }
+  );
 }
 

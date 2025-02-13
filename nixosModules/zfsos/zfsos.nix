@@ -1,9 +1,10 @@
-{ lib, config, self, ... }:
+{ localFlake, ... }:
+{ lib, config, ... }:
 let
   cfg = config.nixOnZfsos;
 in {
   imports = [
-    self.nixosModules.zfs-rollback
+    localFlake.nixosModules.zfs-rollback
   ];
   config = lib.mkIf cfg.enable {
     boot = {
