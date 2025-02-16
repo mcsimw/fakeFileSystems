@@ -1,6 +1,5 @@
 {
   description = "My new flake with merged nixosModules";
-
   inputs = {
     nixpkgs = {
       type = "github";
@@ -19,22 +18,38 @@
       repo = "flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
-
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-    { lib, self, ... }:
-    {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
-      flake.nixosModules = lib.mkMerge [
-        (inputs.nix-genesis.lib.dirToAttrs ./nixosModules)
-        {
-          zfsos = lib.modules.importApply ./nixosModules/zfsos { localFlake = self; };
-        }
-      ];
-    }
-  );
+  outputs =
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+      { lib, self, ... }:
+      {
+        perSystem.treefmt = {
+          projectRootFile = "flake.nix";
+          programs = {
+            nixfmt.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
+            dos2unix.enable = true;
+          };
+        };
+        imports = [
+          inputs.treefmt-nix.flakeModule
+        ];
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
+        flake.nixosModules = lib.mkMerge [
+          (inputs.nix-genesis.lib.dirToAttrs ./nixosModules)
+          {
+            zfsonix = lib.modules.importApply ./nixosModules/zfsosnix { localFlake = self; };
+          }
+        ];
+      }
+    );
 }
-
