@@ -29,12 +29,9 @@ in
       type = lib.types.str;
       default = "2G";
       description = "The size of the swap partition.";
-      check =
-        value:
-        let
-          m = builtins.match "^[1-9][0-9]*(M|G)$" value;
-        in
-        m != null;
+      check = value: let
+        m = builtins.match "^[1-9][0-9]*(M|G)$" value;
+      in m != null;
     };
   };
 
@@ -46,14 +43,9 @@ in
           inherit (cfg) diskName;
         })
       ];
-    }
-    // (import ../../../disko-templates/zfsonix.nix {
-      inherit (cfg)
-        diskName
-        device
-        ashift
-        swapSize
-        ;
+    } // (import ../../../disko-templates/zfsonix.nix {
+          inherit (cfg) diskName device ashift swapSize;
     })
   );
 }
+
