@@ -29,23 +29,27 @@ in
       type = lib.types.str;
       default = "2G";
       description = "The size of the swap partition.";
-      check = value: let
-        m = builtins.match "^[1-9][0-9]*(M|G)$" value;
-      in m != null;
+      check =
+        value:
+        let
+          m = builtins.match "^[1-9][0-9]*(M|G)$" value;
+        in
+        m != null;
     };
   };
 
   config = lib.mkIf cfg.enable (
-    {
-      imports = [
-        (import ./settings.nix {
-          inherit localFlake;
-          inherit (cfg) diskName;
-        })
-      ];
-    } // (import ../../../disko-templates/zfsonix.nix {
-          inherit (cfg) diskName device ashift swapSize;
+    (import ./settings.nix {
+      inherit localFlake;
+      inherit (cfg) diskName;
+    })
+    // (import ../../../disko-templates/zfsonix.nix {
+      inherit (cfg)
+        diskName
+        device
+        ashift
+        swapSize
+        ;
     })
   );
 }
-
